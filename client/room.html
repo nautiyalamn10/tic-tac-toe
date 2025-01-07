@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Chat</title>
+</head>
+
+<body>
+    <h1>Chat Room</h1>
+    <div id="user-list">
+        <h3>Users in this room:</h3>
+        <ul id="users"></ul>
+    </div>
+
+    <div id="chat">
+        <h3>Messages</h3>
+        <ul id="messages"></ul>
+    </div>
+
+    <input type="text" id="message" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const roomId = window.location.pathname.split('/')[2];
+        const userName = prompt("Enter your name");
+
+        // Join the room
+        socket.emit('join-room', roomId, userName);
+
+        // Update user list
+        socket.on('user-joined', (name, users) => {
+            document.getElementById('users').innerHTML = users.map(user => `<li>${user}</li>`).join('');
+        });
+
+        // Update the chat with new messages
+        socket.on('chat-message', (data) => {
+            const messageElement = document.createElement('li');
+            messageElement.textContent = `${data.user}: ${data.message}`;
+            document.getElementById('messages').appendChild(messageElement);
+        });
+
+        // Notify when a user leaves
+        socket.on('user-left', (name, users) => {
+            document.getElementById('users').innerHTML = users.map(user => `<li>${user}</li>`).join('');
+        });
+
+        // Send a new message
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (message) {
+                socket.emit('chat-message', message);
+                document.getElementById('message').value = ''; // Clear the input field
+            }
+        }
+    </script>
+</body>
+
+</html>
