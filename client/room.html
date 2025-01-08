@@ -33,7 +33,8 @@
 
         // Update user list
         socket.on('user-joined', (name, users) => {
-            document.getElementById('users').innerHTML = users.map(user => `<li>${user}</li>`).join('');
+            // console.log({name,users});
+            document.getElementById('users').innerHTML = users.map(user => `<li>${user.name}</li>`).join('');
         });
 
         // Update the chat with new messages
@@ -55,6 +56,14 @@
                 socket.emit('chat-message', message);
                 document.getElementById('message').value = ''; // Clear the input field
             }
+        }
+        
+        async function getRoomPlayers(){
+            fetch('/room/:roomId', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    window.location.href = `/room/${data.roomId}`;
+                });
         }
     </script>
 </body>
